@@ -78,34 +78,44 @@ So we can conclude that single track will have more bias at higher steering angl
 In this part we use Extended Kalman filter (EKF) to estimate position and orientation from odometry data and GPS data
 
 **Define variable**
-- state vector x = $\begin{bmatrix}
+- state vector 
+```math
+x = \begin{bmatrix}
     p_x \\
     p_y \\
     {\phi}
-\end{bmatrix}$
-- input vector u = $\begin{bmatrix}
+\end{bmatrix}
+```
+- input vector 
+```math
+u = \begin{bmatrix}
     v\\
     {\omega}
-\end{bmatrix}$
+\end{bmatrix}
+```
 - Prediction Model:
     - $p_{x_{k+1}} = p_{x_{k}} + v_k cos{\phi}Δt$
     - $p_{y_{k+1}} = p_{y_{k}} + v_k sin{\phi}Δt$
-    - ${\phi}_{k+1} = {\phi}_{k} + {\omega}_k Δt$
+    - $\phi_{k+1} = \phi_{k} + \omega_k Δt$
 - State Transition Matrix (F)
-    - F = $\frac{\partial f(x_t,u_t)}{\partial x}|_{x_t,u_t}$ =$\begin{bmatrix}
+    - ```math
+    F = \frac{\partial f(x_t,u_t)}{\partial x}|_{x_t,u_t} =\begin{bmatrix}
     \frac{\partial p_{x_{k+1}}}{\partial p_{x_{k}}} & \frac{\partial p_{x_{k+1}}}{\partial p_{y_{k}}} & \frac{\partial p_{x_{k+1}}}{\partial {\phi}_{k}} \\
     \frac{\partial p_{y_{k+1}}}{\partial p_{x_{k}}} & \frac{\partial p_{y_{k+1}}}{\partial p_{y_{k}}} & \frac{\partial p_{y_{k+1}}}{\partial {\phi}_{k}} \\
     \frac{\partial {\phi}_{k+1}}{\partial p_{x_{k}}} & \frac{\partial {\phi}_{k+1}}{\partial p_{y_{k}}} & \frac{\partial {\phi}_{k+1}}{\partial {\phi}_{k}}
-\end{bmatrix}$ = $\begin{bmatrix}
-    1 & 0 & -v_k sin{\phi}Δt \\
-    0 & 1 & v_k cos{\phi}Δt \\
-    0 & 0 & 1
-\end{bmatrix}$ 
+    \end{bmatrix} = \begin{bmatrix}
+        1 & 0 & -v_k sin{\phi}Δt \\
+        0 & 1 & v_k cos{\phi}Δt \\
+        0 & 0 & 1
+    \end{bmatrix}
+    ```
 - Measurement Matrix (H)
-    - H = $\begin{bmatrix}
+    - ```math
+    H = \begin{bmatrix}
     1 & 0 & 0 \\
     0 & 1 & 0
-    \end{bmatrix}$ 
+    \end{bmatrix}
+    ```
 
 **Prediction step**
 1. Predicted state estimate
@@ -127,22 +137,26 @@ In this part we use Extended Kalman filter (EKF) to estimate position and orient
 In the first step we use S.D. from noise that calculate and GPS noise to define R and Q value
 
 - Q process noise covarience
-    - Q = $\begin{bmatrix}
+    - ```math
+    Q = \begin{bmatrix}
     {\sigma}_x & 0 & 0 \\
     0 & {\sigma}_y & 0 \\
     0 & 0 & {\sigma}_{\phi}
-    \end{bmatrix}$ 
-    and 
-    ${\sigma}_x = {\sigma}_v$
-    ${\sigma}_y = {\sigma}_v$
-    ${\sigma}_{\phi} = {\sigma}_{\omega}$
-    (we have calculate ${\sigma}_v$ and ${\sigma}_{\omega}$ in part 1 that is $S.D.^2$)
+    \end{bmatrix}
+    ```
+    and
+    $\sigma_x = \sigma_v$
+    $\sigma_y = \sigma_v$
+    $\sigma_\phi = \sigma_\omega$
+    (we have calculate $\sigma_v$ and $\sigma_\omega$ in part 1 that is $S.D.^2$)
 
 - R sensor noise covarience
-    - R = $\begin{bmatrix}
+    - ```math
+    R = \begin{bmatrix}
     {\sigma}_{GPS} & 0\\
      0 & {\sigma}_{GPS}
-    \end{bmatrix}$
+    \end{bmatrix}
+    ```
 
 For Q and R = varience above we get a trajectory graph below
 ![alt text](img/ekf_double_0-01.png)
@@ -219,3 +233,15 @@ from error value the best Q value adjustment is +0 as we see +0.01 make more err
     - Higher R → Trusts model more, ignores sensor updates
     - Lower Q → Assumes the model is more accurate
     - Since Q=0 and R=0.1 performed best, this suggests that the EKF relies more on odometry compared to the initial settings in this experiment.
+
+**Replace Odometry from Ground truth by Odometry from EKF in Path Tracking Controller**
+
+In this part, we use the Pure Pursuit path tracking algorithm and compare the EKF-estimated position to the actual robot position
+![alt text](img/ekf_pure_pursuit.png)
+
+From the graph, we observe some differences between using ground truth and EKF data and can make conclusion:
+- EKF data still contains some noise due to sensor fusion and process noise.
+- Robot behavior:
+    - When the EKF estimates the robot is to the right of its actual position, the controller corrects it to the left.
+    - When the EKF estimates the robot is to the left, the controller corrects it to the right.
+    - This continuous correction causes the robot to exhibit a shaking motion along the path.
