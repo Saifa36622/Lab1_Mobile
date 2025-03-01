@@ -145,8 +145,8 @@ Q = \begin{bmatrix}
 \end{bmatrix}
 ```
 and
-$\sigma_x = \sigma_v$
-$\sigma_y = \sigma_v$
+$\sigma_x = \sigma_v$, 
+$\sigma_y = \sigma_v$, 
 $\sigma_\phi = \sigma_\omega$
 (we have calculate $\sigma_v$ and $\sigma_\omega$ in part 1 that is $S.D.^2$)
 
