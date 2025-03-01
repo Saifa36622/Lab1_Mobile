@@ -98,24 +98,24 @@ u = \begin{bmatrix}
     - $p_{y_{k+1}} = p_{y_{k}} + v_k sin{\phi}Δt$
     - $\phi_{k+1} = \phi_{k} + \omega_k Δt$
 - State Transition Matrix (F)
-    - ```math
-    F = \frac{\partial f(x_t,u_t)}{\partial x}|_{x_t,u_t} =\begin{bmatrix}
-    \frac{\partial p_{x_{k+1}}}{\partial p_{x_{k}}} & \frac{\partial p_{x_{k+1}}}{\partial p_{y_{k}}} & \frac{\partial p_{x_{k+1}}}{\partial {\phi}_{k}} \\
-    \frac{\partial p_{y_{k+1}}}{\partial p_{x_{k}}} & \frac{\partial p_{y_{k+1}}}{\partial p_{y_{k}}} & \frac{\partial p_{y_{k+1}}}{\partial {\phi}_{k}} \\
-    \frac{\partial {\phi}_{k+1}}{\partial p_{x_{k}}} & \frac{\partial {\phi}_{k+1}}{\partial p_{y_{k}}} & \frac{\partial {\phi}_{k+1}}{\partial {\phi}_{k}}
-    \end{bmatrix} = \begin{bmatrix}
-        1 & 0 & -v_k sin{\phi}Δt \\
-        0 & 1 & v_k cos{\phi}Δt \\
-        0 & 0 & 1
-    \end{bmatrix}
-    ```
+```math
+F = \frac{\partial f(x_t,u_t)}{\partial x}|_{x_t,u_t} =\begin{bmatrix}
+\frac{\partial p_{x_{k+1}}}{\partial p_{x_{k}}} & \frac{\partial p_{x_{k+1}}}{\partial p_{y_{k}}} & \frac{\partial p_{x_{k+1}}}{\partial {\phi}_{k}} \\
+\frac{\partial p_{y_{k+1}}}{\partial p_{x_{k}}} & \frac{\partial p_{y_{k+1}}}{\partial p_{y_{k}}} & \frac{\partial p_{y_{k+1}}}{\partial {\phi}_{k}} \\
+\frac{\partial {\phi}_{k+1}}{\partial p_{x_{k}}} & \frac{\partial {\phi}_{k+1}}{\partial p_{y_{k}}} & \frac{\partial {\phi}_{k+1}}{\partial {\phi}_{k}}
+\end{bmatrix} = \begin{bmatrix}
+    1 & 0 & -v_k sin{\phi}Δt \\
+    0 & 1 & v_k cos{\phi}Δt \\
+    0 & 0 & 1
+\end{bmatrix}
+```
 - Measurement Matrix (H)
-    - ```math
-    H = \begin{bmatrix}
-    1 & 0 & 0 \\
-    0 & 1 & 0
-    \end{bmatrix}
-    ```
+```math
+H = \begin{bmatrix}
+1 & 0 & 0 \\
+0 & 1 & 0
+\end{bmatrix}
+```
 
 **Prediction step**
 1. Predicted state estimate
@@ -137,26 +137,26 @@ u = \begin{bmatrix}
 In the first step we use S.D. from noise that calculate and GPS noise to define R and Q value
 
 - Q process noise covarience
-    - ```math
-    Q = \begin{bmatrix}
-    {\sigma}_x & 0 & 0 \\
-    0 & {\sigma}_y & 0 \\
-    0 & 0 & {\sigma}_{\phi}
-    \end{bmatrix}
-    ```
-    and
-    $\sigma_x = \sigma_v$
-    $\sigma_y = \sigma_v$
-    $\sigma_\phi = \sigma_\omega$
-    (we have calculate $\sigma_v$ and $\sigma_\omega$ in part 1 that is $S.D.^2$)
+```math
+Q = \begin{bmatrix}
+{\sigma}_x & 0 & 0 \\
+0 & {\sigma}_y & 0 \\
+0 & 0 & {\sigma}_{\phi}
+\end{bmatrix}
+```
+and
+$\sigma_x = \sigma_v$
+$\sigma_y = \sigma_v$
+$\sigma_\phi = \sigma_\omega$
+(we have calculate $\sigma_v$ and $\sigma_\omega$ in part 1 that is $S.D.^2$)
 
 - R sensor noise covarience
-    - ```math
-    R = \begin{bmatrix}
-    {\sigma}_{GPS} & 0\\
-     0 & {\sigma}_{GPS}
-    \end{bmatrix}
-    ```
+```math
+R = \begin{bmatrix}
+{\sigma}_{GPS} & 0\\
+    0 & {\sigma}_{GPS}
+\end{bmatrix}
+```
 
 For Q and R = varience above we get a trajectory graph below
 ![alt text](img/ekf_double_0-01.png)
