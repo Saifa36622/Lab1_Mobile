@@ -38,7 +38,7 @@ ros2 run lab1_robot_description controller.py
 ros2 run lab1_robot_description controller2.py
 ```
 
-FK run 3 type odom that can visualize in RVIZ
+- FK run 3 type odom that can visualize in RVIZ
 
 ```
 ros2 launch lab1_robot_description odom.launch.py
