@@ -502,12 +502,54 @@ $$
    - After computing the optimal control sequence \(\{\mathbf{u}_0, \dots, \mathbf{u}_{N-1}\}\), only \(\mathbf{u}_0\) is applied to the system.
    - At the next time step, the horizon shifts forward by one, and the optimization is solved again using the updated state \(\mathbf{x}_1\). 
 
----
+for this controll method I use 2 variable set (for this controil method there is a lot of variabe to fine tune so I decide to use 2 dataset of variable )
 
+- MPC 
+  - T  = 10      # Horizon length (number of steps)
+  - R  = np.diag([0.1, 0.1])    # Input cost
+  - Rd = np.diag([0.1, 1.0])     # Input difference cost
+  - Q  = np.diag([1.0, 1.0, 0.5, 0.5])  # State cost
+  - Qf = Q                        # Terminal state cost
+
+    
+  - MAX_ITER = 5     # Max iteration in iterative linearization
+  - DU_TH    = 0.1   # Convergence threshold
+
+  - WB = 0.2         # Wheelbase [m]
+  - MAX_STEER = np.deg2rad(40.0)
+  - MAX_DSTEER = np.deg2rad(30.0)
+  - MAX_SPEED = 1.0
+  - MIN_SPEED = -1.0
+  - MAX_ACCEL = 1.0
+  - DT = 0.1         # Timestep, also used for the linear model tick
+  - N_IND_SEARCH = 10
+
+- MPC 2
+  - T  = 10      # Horizon length (number of steps)
+  - R  = np.diag([0.1, 0.1])    # Input cost
+  - Rd = np.diag([1.0, 1.0])     # Input difference cost
+  - Q  = np.diag([1.0, 1.0, 0.5, 0.5])  # State cost
+  - Qf = Q                        # Terminal state cost
+
+    
+  - MAX_ITER = 5     # Max iteration in iterative linearization
+  - DU_TH    = 0.1   # Convergence threshold
+
+  - WB = 0.2         # Wheelbase [m]
+  - MAX_STEER = np.deg2rad(40.0)
+  - MAX_DSTEER = np.deg2rad(30.0)
+  - MAX_SPEED = 0.5
+  - MIN_SPEED = -0.5
+  - MAX_ACCEL = 1.0
+  - DT = 0.1         # Timestep, also used for the linear model tick
+
+  - N_IND_SEARCH = 10
+
+the result as follow 
 
 ![alt text](img/MPC.png)
 
-from the graph indicate that 
+from the graph indicate that MPC2 is more stable and accurate, while MPC is faster but less precise. This happens because MPC2 has a lower max speed (0.5 m/s vs. 1.0 m/s in MPC), which makes it move more carefully and reduces sudden changes in direction. Also, MPC2 has a higher input difference cost ($R_d$ = diag([1.0, 1.0])), which means it avoids quick, sharp control changes, leading to smoother movement and better yaw stability. On the other hand, MPC allows more sudden adjustments due to its lower input difference cost ($R_d$ = diag([0.1, 1.0])), making it react faster but with more overshooting and instability. Because of this, MPC has larger tracking errors and wobbles more compared to MPC2. These results show a clear trade-off: MPC is better if you want faster reactions, but MPC2 is the better choice for smooth and precise movement.
 
 ### Lab1.3
 In this part we use Extended Kalman filter (EKF) to estimate position and orientation from odometry data and GPS data
