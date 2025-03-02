@@ -549,6 +549,7 @@ the result as follow
 
 ![alt text](img/MPC.png)
 
+##### Conclusion
 from the graph indicate that MPC2 is more stable and accurate, while MPC is faster but less precise. This happens because MPC2 has a lower max speed (0.5 m/s vs. 1.0 m/s in MPC), which makes it move more carefully and reduces sudden changes in direction. Also, MPC2 has a higher input difference cost ($R_d$ = diag([1.0, 1.0])), which means it avoids quick, sharp control changes, leading to smoother movement and better yaw stability. On the other hand, MPC allows more sudden adjustments due to its lower input difference cost ($R_d$ = diag([0.1, 1.0])), making it react faster but with more overshooting and instability. Because of this, MPC has larger tracking errors and wobbles more compared to MPC2. These results show a clear trade-off: MPC is better if you want faster reactions, but MPC2 is the better choice for smooth and precise movement.
 
 ### Lab1.3
