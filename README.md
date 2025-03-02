@@ -13,7 +13,7 @@ git clone https://github.com/Saifa36622/Lab1_Mobile.git
 then build and source the directory 
 
 ```
-colcon build && source installl/setup.bash
+colcon build && source install/setup.bash
 
 ```
 
@@ -97,7 +97,7 @@ ros2 run lab1_robot_description Stanley.py --ros-args --param odom:="double_trac
 
 In this part we calculate wheel speed from the linear velocity and omega input with 2 method 
 
-- **Basic Model**
+- **Basic Model or Bicycle model**
     - Calculate the steering angle (δ) from yaw rate / velocity
 
 $$\delta = \arctan \left( \frac{L \Omega_z}{v} \right)$$
@@ -179,8 +179,9 @@ and we can plot the position error as follow
 | Slip Fast      | 3.9207        | 6.9164       |
 | Non-Slip Fast  | 3.3777        | 5.7663       |
 
-from the graph indicate that 
 
+
+The graph indicates that, at the same speed, the non-slip model demonstrates better trajectory tracking than the slip model, which exhibits significantly higher radial error. Additionally, as speed increases, the amount of error also rises, as shown in the bar graph. This suggests that velocity constraints significantly impact position accuracy and trajectory tracking for both models. The effect is particularly show in the slip model, where higher speeds result in substantial radial error, leading to greater deviations from the desired path.
 
 ##### Sin wave
 
@@ -192,11 +193,13 @@ and we can plot the position error as follow
 
 ![alt text](img/Sin2.png)
 
-from the graph indicate that 
+from the graph indicate that slip makes it much harder for the bicycle model to stay on track and control its direction. The slip model has bigger yaw errors, which add up over time, causing it to drift further from the intended path. This is especially clear in the wavy (sinusoidal) path, where the slip model struggles to follow the ideal route and moves too far off course. On the other hand, the non-slip model keeps better control and stays closer to the planned path. This means that reducing slip is important for better accuracy, especially at higher speeds where errors grow quickly.
 
 #### Conclusion 
 
+The analysis shows that the non-slip model performs better in both trajectory tracking and direction control compared to the slip model. At the same speed, the slip model has a much higher radial error and struggles to stay on the desired path. As speed increases, errors become larger for both models, but the slip model is affected the most, showing significant deviations. The yaw rate error and cumulative yaw deviation further confirm that slip leads to long-term drift, making it harder to maintain stability, especially on curved paths. Overall, reducing slip is key to improving accuracy, especially at higher speeds, where errors grow rapidly and make precise control more difficult.
 
+The reason the Bicycle model show the worse result becasue The bicycle model does not work well under slip conditions because it assumes perfect traction and ignores complex tire dynamics ,It going to become inaccurate when dealing with high slip, sharp turns, or low-friction surfaces and that is all the constrain we going to face in this project ,**So for the path tracking controler we will choose non-slip model as our wheel velocity controller**
 #### Forward Kinematics
 
 In this part we calculate odometry from forward Kinematics with 3 method
@@ -304,7 +307,29 @@ So the result as follows
 
 ![alt text](img/Pure1.png)
 
-from the graph indicate that 
+and if we plot out the error 
+
+![alt text](img/Pure2.png)
+
+from the graph indicate 
+- **Path Tracking and Position Error**
+  - Pure Pursuit 0.01 (red) follows the path well but has small oscillations.
+  - Pure Pursuit 0.1 (green) is smoother and closer to the reference path.
+  - Pure Pursuit 1.0 (blue) struggles to stay on track, especially in sharp turns.
+  - **Position error is smallest for 0.1, while 1.0 has the largest errors, meaning it drifts more from the target path.**
+
+- **Speed and Acceleration Stability**
+  - Pure Pursuit 0.01 has unstable speed, with high acceleration spikes,that causing jerky motion.
+  - Pure Pursuit 0.1 keeping speed steady and acceleration under control.
+  - Pure Pursuit 1.0 is unstable, with sudden speed jumps and inconsistent movement.
+- **Orientation and Overshoot**
+   - Yaw error is lowest for 0.1, meaning it keeps the correct direction better.
+   - 0.01 and 1.0 have big orientation swings, making them harder to control.
+   - Overshoot is worst in 0.01, meaning it reacts too aggressively.
+
+##### Conclusion
+
+The analysis shows that Pure Pursuit 0.1 gives the best balance between accuracy, stability, and smooth movement, while 0.01 is too reactive and 1.0 is too unresponsive, all running at a constant speed of 1 m/s. The main reason is the look-ahead distance—a small value (0.01) reacts too fast, making constant sharp corrections, causing high acceleration spikes and unstable motion. On the other hand, a large look-ahead distance (1.0) looks too far ahead, making the vehicle cut corners and struggle with sharp turns, leading to big tracking errors. Even though all setups move at 1 m/s, 0.01 keeps adjusting too much, making the motion shaky, while 1.0 doesn’t respond well enough, leading to drifting. The medium look-ahead distance (0.1) works best, keeping the movement smooth and accurate with fewer errors. This shows that even at a constant speed, **tuning the look-ahead distance is key to getting both accuracy and stability**. However, if the speed changes, the look-ahead distance also needs to be adjusted to keep the same level of accuracy and stability
 
 #### Stanley 
 
@@ -336,10 +361,139 @@ variablew as follows
  ![alt text](img/Stanley2.png)
 
  
-from the graph indicate that 
+from the graph indicate 
 
+ - **Position Tracking and Error**
+   - Stanley with k =  0.2,linear_vel =  0.5 (blue) achieves the best tracking, closely following the reference path with the lowest average position error
+   - Higher speeds make it harder to track accurately, as seen in Stanley 0.2, 1.0’s large position error distribution, where many errors exceed 10m.
+ - **Effect of Gain (k) on Stability and Overshoot**
+    - Higher k values (0.5) respond faster but can cause overshoot and oscillations if not well-tuned to sync with the linear_vel
+    - Lower k values (0.2) are smoother, reducing excessive corrections, but may respond too slowly at high speeds.
+
+ - **Velocity Tracking and Yaw Error**
+   - Yaw error follows a similar trend, where higher speed settings (1.0 m/s) cause larger yaw deviations, making orientation control harder.
+   - At linear_vel = 1 , Lower k values (0.2) are smoother, reducing excessive corrections, but may respond too slowly at high speeds. but k gain = 0.5 also struggles with maintaining a steady velocity, as high gain causes rapid adjustments.
+
+##### Conclusion
+
+The analysis shows that Stanley with k = 0.2, linear velocity = 0.5 m/s (blue) provides the best balance, achieving low position error, stable yaw, and smooth velocity tracking. In contrast, Stanley with k = 0.5, v = 1.0 (red) and k = 0.2, v = 1.0 (green) struggle with higher errors, instability, and oscillations. The reason for this outcome lies in the interaction between gain (k) and speed—a higher k (0.5) reacts more aggressively, leading to overshoot and rapid corrections, while a lower k (0.2) at high speed (1.0 m/s) lacks responsiveness, causing large tracking deviations. Additionally, at higher speeds, the controller has less time to adjust, making errors larger, especially with a low k value that cannot correct quickly enough. Meanwhile, Stanley k = 0.2, v = 0.5 (blue) strikes the optimal balance, where low speed gives the controller enough time to adjust smoothly, and a moderate gain (0.2) prevents excessive oscillations, leading to precise and stable tracking. This confirms that higher speeds require fine-tuning of k and additional predictive adjustments to maintain accuracy and stability.
 
 #### MPC (model predictive control) 
+
+##### 1. Vehicle Motion Model (Ackermann Kinematics)
+
+The kinematic equations for an Ackermann-drive vehicle are:
+
+$$
+\dot{{x}} = {v} \cos({\theta}), \quad
+\dot{{y}} = {v} \sin({\theta}), \quad
+\dot{{\theta}} = \frac{{v}}{{L}} \tan({\delta}), \quad
+\dot{{v}} = {a}
+$$
+
+where:
+- ${x}$, ${y}$ are the vehicle’s position,
+- ${\theta}$ is its heading angle,
+- ${v}$ is its forward velocity,
+- ${\delta}$ is the steering angle,
+- ${a}$ is the longitudinal acceleration,
+- ${L}$ is the wheelbase.
+
+##### 2. Linearized State-Space Model for MPC
+
+We define our state and input vectors as:
+
+$$
+{\mathbf{x}} = 
+\begin{bmatrix}
+{x} \\
+{y} \\
+{\theta} \\
+{v}
+\end{bmatrix}
+,\quad
+{\mathbf{u}} =
+\begin{bmatrix}
+{a} \\
+{\delta}
+\end{bmatrix}.
+$$
+
+A discretized linear model typically has the form:
+
+$$
+{\mathbf{x}}_{k+1} = {A}\,{\mathbf{x}}_{k} + {B}\,{\mathbf{u}}_{k},
+$$
+
+where ${A}$ and ${B}$ come from linearizing the above kinematic equations around a nominal operating point (e.g. ${\delta_0}$, ${v_0}$).
+
+##### 3. MPC Optimization
+
+At every time step, MPC solves:
+
+$$
+\min_{\{{\mathbf{u}}_0,\dots,{\mathbf{u}}_{N-1}\}}
+\sum_{k=0}^{N-1} \Bigl[
+({\mathbf{x}}_{k} - {\mathbf{x}}_{k}^{\text{ref}})^T {Q} ({\mathbf{x}}_{k} - {\mathbf{x}}_{k}^{\text{ref}})
++ {\mathbf{u}}_{k}^T {R} {\mathbf{u}}_{k}
+\Bigr]
++ ({\mathbf{x}}_{N} - {\mathbf{x}}_{N}^{\text{ref}})^T {P} ({\mathbf{x}}_{N} - {\mathbf{x}}_{N}^{\text{ref}})
+$$
+
+subject to:
+
+$$
+{\mathbf{x}}_{k+1} = {A}\,{\mathbf{x}}_{k} + {B}\,{\mathbf{u}}_{k},
+$$
+
+and constraints such as:
+
+$$
+-{\delta}_{\max} \le {\delta}_{k} \le {\delta}_{\max}, 
+\quad {a}_{\min} \le {a}_{k} \le {a}_{\max}, 
+\quad 0 \le {v}_{k} \le {v}_{\max}.
+$$
+
+Only the first control input ${\mathbf{u}}_{0}$ is applied each cycle, then the horizon “slides” forward.
+
+---
+
+**Additional Notes on the Cost Function and Weighting Matrices**
+
+1. **Stage Cost:**
+
+   $$
+   ({\mathbf{x}}_{k} - {\mathbf{x}}_{k}^{\text{ref}})^T Q ({\mathbf{x}}_{k} - {\mathbf{x}}_{k}^{\text{ref}})
+   + {\mathbf{u}}_{k}^T R {\mathbf{u}}_{k}
+   $$
+
+   This term penalizes deviations from the desired trajectory via \(Q\) and large control efforts via \(R\).
+
+2. **Terminal Cost:**
+
+   $$
+   ({\mathbf{x}}_{N} - {\mathbf{x}}_{N}^{\text{ref}})^T P ({\mathbf{x}}_{N} - {\mathbf{x}}_{N}^{\text{ref}})
+   $$
+
+   A final penalty on the state at the end of the horizon, encouraging the MPC to consider long-term performance. The matrix \(P\) is often chosen as the solution to a Riccati equation for an infinite-horizon LQR to ensure good closed-loop stability.
+
+3. **Weighting Matrices \((Q,R,P)\):**
+
+   - \(Q \succeq 0\) penalizes state tracking errors.
+   - \(R \succ 0\) penalizes excessive control input magnitudes.
+   - \(P \succeq 0\) shapes the terminal penalty on the final state.
+   - Optionally, an additional matrix \(R_d\) can penalize rapid changes in control:
+   
+     $$
+     (\Delta \mathbf{u}_k)^T R_d (\Delta \mathbf{u}_k),
+     \quad \text{where} \ \Delta \mathbf{u}_k = \mathbf{u}_k - \mathbf{u}_{k-1}.
+     $$
+
+4. **Receding Horizon Strategy:**
+   - After computing the optimal control sequence \(\{\mathbf{u}_0, \dots, \mathbf{u}_{N-1}\}\), only \(\mathbf{u}_0\) is applied to the system.
+   - At the next time step, the horizon shifts forward by one, and the optimization is solved again using the updated state \(\mathbf{x}_1\). 
+
+---
 
 
 ![alt text](img/MPC.png)
