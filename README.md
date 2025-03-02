@@ -344,6 +344,8 @@ from the graph indicate that
 
 ![alt text](img/MPC.png)
 
+from the graph indicate that 
+
 ### Lab1.3
 In this part we use Extended Kalman filter (EKF) to estimate position and orientation from odometry data and GPS data
 
