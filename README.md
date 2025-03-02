@@ -1,6 +1,203 @@
 # Lab1_Mobile
- ## Lab1.1
-### Forward Kinematics
+## **System overview**
+
+## **How to use**
+
+git clone the repository 
+
+```
+git clone https://github.com/Saifa36622/Lab1_Mobile.git
+
+```
+
+then build and source the directory 
+
+```
+colcon build && source installl/setup.bash
+
+```
+
+to run simulation with gazebo ground truth 
+
+
+```
+ros2 launch lab1_robot_gazebo sim.launch.py
+
+```
+#### Lab1.1
+
+- IK run controller with bicycle model
+
+```
+ros2 run lab1_robot_description controller.py
+```
+
+- IK run controller withnon-slip model
+
+```
+ros2 run lab1_robot_description controller2.py
+```
+
+FK run 3 type odom that can visualize in RVIZ
+
+```
+ros2 launch lab1_robot_description odom.launch.py
+
+```
+and to control by keyboard use
+```
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
+
+
+#### Lab1.2
+
+run sim with ground truth and no-slip controller
+``` 
+ros2 launch lab1_robot_gazebo sim_controller.launch.py
+```
+and to select Path tracking control method 
+- Pure Pursuit controller 
+```
+ros2 run lab1_robot_description Pure_pursuit.py
+```
+- Stanley controller 
+```
+ros2 run lab1_robot_description Stanley.py
+```
+ - MPC controller 
+ ```
+ros2 run lab1_robot_description MPC.py
+ ```
+#### Lab1.3
+
+run sim with ground truth and no-slip controller and EKF (visualize odom, EKF and GPS data in rviz)
+
+````
+ros2 launch lab1_robot_gazebo sim_EKF.launch.py
+````
+
+run path tracking with customize odom we can use parameter "ground_truth", "double_track", "single_track", "yaw_rate" such as 
+
+```
+ros2 run lab1_robot_description Pure_pursuit.py --ros-args --param odom:="double_track"
+```
+```
+ros2 run lab1_robot_description MPC.py --ros-args --param odom:="ground_truth"
+```
+
+```
+ros2 run lab1_robot_description Stanley.py --ros-args --param odom:="double_track"
+```
+## **Validation**
+
+### Lab1.1
+
+#### Inverse Kinematics
+
+In this part we calculate wheel speed from the linear velocity and omega input with 2 method 
+
+- **Basic Model**
+    - Calculate the steering angle (δ) from yaw rate / velocity
+
+$$\delta = \arctan \left( \frac{L \Omega_z}{v} \right)$$
+
+- where: <br>
+  - `L` is the wheelbase,
+  - `Ωz` is the yaw rate,
+  - `v` is the velocity.
+
+- **No Slip condition constraints**
+   - Calculate the steering angle (δ) from 
+
+      - Inside wheel angle
+$$
+\delta_inside = \tan^{-1} \left( \frac{WB \tan(\delta_{Ack})}{WB + 0.5 TW \tan(\delta_{Ack})} \right)
+$$ 
+<br> 
+
+        - Outside wheel angle
+
+<br>
+
+$$
+\delta_outside = \tan^{-1} \left( \frac{WB \tan(\delta_{Ack})}{WB - 0.5 TW \tan(\delta_{Ack})} \right)
+$$
+
+where:
+- \( WB \) is the **wheelbase** (distance between front and rear axles),
+- \( TW \) is the **track width** (distance between the left and right wheels),
+
+when 
+- Right turn
+
+  - Outside angle, $\delta_outside$, is left wheel angle $\delta_L$
+
+  - Inside angle, $\delta_inside$, is right wheel angle $\delta_R$
+
+- Left turn <br>
+  - Outside angle, $\delta_outside$, is left wheel angle $\delta_R$
+
+  - Inside angle, $\delta_inside$, is right wheel angle $\delta_L$
+
+To compare and validate result, we use pure pursuit path tracking with different speed and plot the results to compare:
+
+- position
+- omega and yaw
+
+So the we will validate with run in 2 shape 
+
+
+##### Circle shape 
+
+we will run in 2 speed 
+
+ - Slow 
+   - linear velocity = 1.5 m/s
+   - angular velocity  = 1.0 rad/s
+- fast 
+  - linear velocity = 2.5 m/s
+   - angular velocity  = 0.5 rad/s
+
+
+To validate the bicycle model and non-slip assumption, we conducted an experiment in which the system was commanded to follow a circular trajectory by maintaining a constant linear velocity and constant angular velocity to validate the position in this situation 
+
+A result is show as following
+
+![alt text](img/Circle1.png) 
+
+and we can plot the position error as follow
+
+![alt text](img/Circle2.png)
+
+###### Position Tracking Error Summary
+
+| Scenario         | Mean Error (m) | Max Error (m) |
+|-----------------|---------------|--------------|
+| Slip Slow      | 1.1596        | 2.0333       |
+| Non-Slip Slow  | 0.9721        | 1.6384       |
+| Slip Fast      | 3.9207        | 6.9164       |
+| Non-Slip Fast  | 3.3777        | 5.7663       |
+
+from the graph indicate that 
+
+
+##### Sin wave
+
+To validate the bicycle model and non-slip assumption, we conducted an experiment in which the system was commanded to follow a sinusoidal trajectory by maintaining a constant linear velocity while applying a periodic steering input to evaluate its positional accuracy under these conditions.
+
+![alt text](img/Sin1.png) 
+
+and we can plot the position error as follow
+
+![alt text](img/Sin2.png)
+
+from the graph indicate that 
+
+#### Conclusion 
+
+
+#### Forward Kinematics
 
 In this part we calculate odometry from forward Kinematics with 3 method
 - **Double Track:** 
@@ -58,7 +255,7 @@ From these graph we can see different in angular velocity error in single track 
 
 So we can conclude that single track will have more bias at higher steering angles.
 
-#### Conclusion
+##### Conclusion
 - Double Track:
     - Error is mainly due to variance.
     - Variance increases with speed, causing higher noise at higher speeds.
@@ -73,8 +270,81 @@ So we can conclude that single track will have more bias at higher steering angl
     - Has the least error.
     - Error increases if IMU noise is high.
 
+### Lab1.2
+The selected algorithm is 
+ - Pure Pursuit
+    - **Pro** : This control method are directly uses a look-ahead distance and the path to compute steering commands and pretty straightforward to implement
+    - **Con**: At high speeds or on sharp curves, it can exhibit lag or large tracking errors and requires carefully selecting a look-ahead distance. Too short → unstable; too long → Turn too fast or not tracking the path
+ - Stanley
+   -  **Pro** : This control method are directly measures angular error and lateral error
+   - **Con**: Like other geometry-based methods, it does not inherently account for tire slip anx require careful parameter selection; incorrect gains can lead non-opimal path tracking 
+ - MPC
+   -  **Pro** : This control method can explicitly incorporate actuator limits, slip angles, or other physical constraints and considers future states over a prediction horizon, which helps anticipate sharp curves or sudden changes also can integrate dynamic vehicle models, cost functions for safety, comfort, efficiency, etc.
+   - **Con**: Requires solving an optimization problem at each time step and complex implementation <br>
 
-## Lab1.3
+why not PID : <br>
+ while PID is easy to implement and understand but this control method does not inherently account for curvature or vehicle kinematics also a single set of gains may not perform well under different speeds or tight turns .So in this constraint **PID might not be the optimal control method** 
+
+#### Pure Pursuit
+
+The steering angle ${\delta}$ is calculated using the **Pure Pursuit** formula:
+
+$${\delta} = \arctan \left( \frac{2L \sin(\alpha)}{l_d} \right)$$
+
+where:
+- ${L}$ is the **wheelbase** of the vehicle,
+- ${\alpha}$ is the **angle between the look-ahead point and the vehicle's heading**,
+- ${l_d}$ is the **look-ahead distance**.
+
+This equation is fundamental to **Pure Pursuit control**, which adjusts the steering based on a target waypoint ahead of the vehicle.
+
+In this validation we use 3 variable of look-ahead distance as follows **[0.01 ,0.1,1]** and use constant speed at **1.0 m/s**
+
+So the result as follows
+
+![alt text](img/Pure1.png)
+
+from the graph indicate that 
+
+#### Stanley 
+
+The steering angle ${\delta}$ is calculated using the **Stanley Controller** formula:
+
+$${\delta(t)} = {\theta_e(t) + \tan^{-1} \left( \frac{k e_{fa}(t)}{v_x(t)} \right)}$$
+
+where:
+- ${\theta_e(t)}$ is the **heading error** at time \( t \),
+- ${k}$ is the **tuning gain** that affects lateral error correction,
+- ${e_{fa}(t)}$ is the **lateral error** (perpendicular distance from the reference path),
+- ${v_x(t)}$ is the **vehicle's longitudinal velocity**.
+
+This equation is fundamental to **Stanley Control**, which corrects both heading and lateral errors for accurate path tracking.
+
+In this validation for this control method that have velocity in the equation we will fine tune the 
+variablew as follows 
+
+ - ${k}$ = 0.2 , linear_speed = 0.5
+ - ${k}$ = 0.2 , linear_speed = 1.0
+ - ${k}$ = 0.5 , linear_speed = 1.0
+
+ So the result as follows
+
+ ![alt text](img/Stanley1.png)
+
+ and we plot out the error as a graph as follow 
+
+ ![alt text](img/Stanley2.png)
+
+ 
+from the graph indicate that 
+
+
+#### MPC (model predictive control) 
+
+
+![alt text](img/MPC.png)
+
+### Lab1.3
 In this part we use Extended Kalman filter (EKF) to estimate position and orientation from odometry data and GPS data
 
 **Define variable**
@@ -226,7 +496,7 @@ Q value adjust|Mean Pos. Error (m)|Mean Yaw Error (rad)
 
 from error value the best Q value adjustment is +0 as we see +0.01 make more error and -0.01 can make some error value decrease and some increase that did not show significant differences, So both +0 and -0.01 is mostly same value.
 
-#### Conclusion
+##### Conclusion
 - We can initialize Q and R based on sensor variance.
 - Fine-tuning can improve accuracy, with R=0.1 and Q=initial variance being the best settings for this experiment.
 - From the results, we can interpret the effect of tuning R and Q as follows:
