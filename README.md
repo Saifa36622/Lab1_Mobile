@@ -723,3 +723,18 @@ From the graph, we observe some differences between using ground truth and EKF d
     - When the EKF estimates the robot is to the right of its actual position, the controller corrects it to the left.
     - When the EKF estimates the robot is to the left, the controller corrects it to the right.
     - This continuous correction causes the robot to exhibit a shaking motion along the path.
+  
+## Demo video
+
+- Lab 1.1 use controller model with 3 estimator FK model
+  
+https://github.com/user-attachments/assets/1c119fd7-21ae-4dd3-b76e-6ffbb0c133f2
+
+- Lab 1.2 Pure pursuited path tracking controller (video speed *4)
+
+https://github.com/user-attachments/assets/24997e08-25b7-46e5-a425-0595afa951a7
+
+- Lab 1.3 Pure pursuited path tracking controller with EKF (video speed *4)
+
+https://github.com/user-attachments/assets/66830b95-d8db-4aac-9e86-29a976767213
+
