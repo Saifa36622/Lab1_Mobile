@@ -422,8 +422,10 @@ $$
 A discretized linear model typically has the form:
 
 $$
-{\mathbf{x}}_{k+1} = {A}\,{\mathbf{x}}_{k} + {B}\,{\mathbf{u}}_{k},
+\mathbf{x}_{k+1} = A\,\mathbf{x}_k + B\,\mathbf{u}_k
 $$
+
+
 
 where ${A}$ and ${B}$ come from linearizing the above kinematic equations around a nominal operating point (e.g. ${\delta_0}$, ${v_0}$).
 
@@ -432,27 +434,30 @@ where ${A}$ and ${B}$ come from linearizing the above kinematic equations around
 At every time step, MPC solves:
 
 $$
-\min_{\{{\mathbf{u}}_0,\dots,{\mathbf{u}}_{N-1}\}}
-\sum_{k=0}^{N-1} \Bigl[
-({\mathbf{x}}_{k} - {\mathbf{x}}_{k}^{\text{ref}})^T {Q} ({\mathbf{x}}_{k} - {\mathbf{x}}_{k}^{\text{ref}})
-+ {\mathbf{u}}_{k}^T {R} {\mathbf{u}}_{k}
-\Bigr]
-+ ({\mathbf{x}}_{N} - {\mathbf{x}}_{N}^{\text{ref}})^T {P} ({\mathbf{x}}_{N} - {\mathbf{x}}_{N}^{\text{ref}})
+\min_{\{\mathbf{u}_0, \dots, \mathbf{u}_{N-1}\}}
+\sum_{k=0}^{N-1} \left[
+(\mathbf{x}_k - \mathbf{x}_k^{\text{ref}})^T Q (\mathbf{x}_k - \mathbf{x}_k^{\text{ref}})
++ \mathbf{u}_k^T R \mathbf{u}_k
+\right]
++ (\mathbf{x}_N - \mathbf{x}_N^{\text{ref}})^T P (\mathbf{x}_N - \mathbf{x}_N^{\text{ref}})
 $$
+
 
 subject to:
 
 $$
-{\mathbf{x}}_{k+1} = {A}\,{\mathbf{x}}_{k} + {B}\,{\mathbf{u}}_{k},
+\mathbf{x}_{k+1} = A\,\mathbf{x}_k + B\,\mathbf{u}_k,
 $$
+
 
 and constraints such as:
 
 $$
--{\delta}_{\max} \le {\delta}_{k} \le {\delta}_{\max}, 
-\quad {a}_{\min} \le {a}_{k} \le {a}_{\max}, 
-\quad 0 \le {v}_{k} \le {v}_{\max}.
+-\delta_{\max} \le \delta_k \le \delta_{\max}, 
+\quad a_{\min} \le a_k \le a_{\max}, 
+\quad 0 \le v_k \le v_{\max}.
 $$
+
 
 Only the first control input ${\mathbf{u}}_{0}$ is applied each cycle, then the horizon “slides” forward.
 
@@ -462,32 +467,36 @@ Only the first control input ${\mathbf{u}}_{0}$ is applied each cycle, then the 
 
 1. **Stage Cost:**
 
-   $$
-   ({\mathbf{x}}_{k} - {\mathbf{x}}_{k}^{\text{ref}})^T Q ({\mathbf{x}}_{k} - {\mathbf{x}}_{k}^{\text{ref}})
-   + {\mathbf{u}}_{k}^T R {\mathbf{u}}_{k}
-   $$
+$$
+(\mathbf{x}_k - \mathbf{x}_k^{\text{ref}})^T Q (\mathbf{x}_k - \mathbf{x}_k^{\text{ref}})
++ \mathbf{u}_k^T R \mathbf{u}_k
+$$
+
 
    This term penalizes deviations from the desired trajectory via \(Q\) and large control efforts via \(R\).
 
 2. **Terminal Cost:**
 
-   $$
-   ({\mathbf{x}}_{N} - {\mathbf{x}}_{N}^{\text{ref}})^T P ({\mathbf{x}}_{N} - {\mathbf{x}}_{N}^{\text{ref}})
-   $$
+$$
+(\mathbf{x}_N - \mathbf{x}_N^{\text{ref}})^T P (\mathbf{x}_N - \mathbf{x}_N^{\text{ref}})
+$$
+
 
    A final penalty on the state at the end of the horizon, encouraging the MPC to consider long-term performance. The matrix \(P\) is often chosen as the solution to a Riccati equation for an infinite-horizon LQR to ensure good closed-loop stability.
 
 3. **Weighting Matrices \((Q,R,P)\):**
 
-   - \(Q \succeq 0\) penalizes state tracking errors.
-   - \(R \succ 0\) penalizes excessive control input magnitudes.
-   - \(P \succeq 0\) shapes the terminal penalty on the final state.
-   - Optionally, an additional matrix \(R_d\) can penalize rapid changes in control:
-   
-     $$
-     (\Delta \mathbf{u}_k)^T R_d (\Delta \mathbf{u}_k),
-     \quad \text{where} \ \Delta \mathbf{u}_k = \mathbf{u}_k - \mathbf{u}_{k-1}.
-     $$
+- $Q \succeq 0$ penalizes state tracking errors.
+- $R \succ 0$ penalizes excessive control input magnitudes.
+- $P \succeq 0$ shapes the terminal penalty on the final state.
+- Optionally, an additional matrix $R_d$ can penalize rapid changes in control.
+
+
+$$
+(\Delta \mathbf{u}_k)^T R_d (\Delta \mathbf{u}_k),
+\quad \text{where} \ \Delta \mathbf{u}_k = \mathbf{u}_k - \mathbf{u}_{k-1}.
+$$
+
 
 4. **Receding Horizon Strategy:**
    - After computing the optimal control sequence \(\{\mathbf{u}_0, \dots, \mathbf{u}_{N-1}\}\), only \(\mathbf{u}_0\) is applied to the system.
