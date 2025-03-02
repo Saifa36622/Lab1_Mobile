@@ -1,6 +1,20 @@
 # Lab1_Mobile
 ## **System overview**
-
+![ROS chart (3)](https://github.com/user-attachments/assets/38e45504-8df6-443b-9d9a-574ea1ee93b4)
+This project consists of five main parts:
+- Robot Model: Defines the robot’s structure using a URDF/Xacro file and spawns it in the simulation world. The robot includes an IMU, joint state publisher, model state, and velocity controllers for the rear wheels and position controllers for the front-wheel steering.
+- Wheel Odometry: Uses forward kinematics to estimate odometry based on wheel speed and steering position. Three types of odometry are implemented:
+    - Single track
+    - Double track
+    - Yaw rate (combining wheel odometry and IMU data)
+- EKF: Fuses GPS data with wheel odometry to improve localization accuracy.
+- Path tracking: Controls the robot to follow a path from a YAML file. Three control algorithm are use:
+    - Pure Pursuit
+    - Stanley
+    - Model Predictive Control (MPC)
+- Controller: Converts robot velocity commands (Twist /cmd_vel) into wheel speed and steering position using inverse kinematics. Two models are implemented:
+    - Bicycle model
+    - Non-slip model
 ## **How to use**
 
 git clone the repository 
