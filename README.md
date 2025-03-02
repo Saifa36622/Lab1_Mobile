@@ -110,13 +110,13 @@ $$\delta = \arctan \left( \frac{L \Omega_z}{v} \right)$$
 - **No Slip condition constraints**
    - Calculate the steering angle (δ) from 
 
-      - Inside wheel angle
+        - Inside wheel angle
 $$
 \delta_inside = \tan^{-1} \left( \frac{WB \tan(\delta_{Ack})}{WB + 0.5 TW \tan(\delta_{Ack})} \right)
 $$ 
 <br> 
 
-        - Outside wheel angle
+- Outside wheel angle
 
 <br>
 
@@ -125,8 +125,8 @@ $$
 $$
 
 where:
-- \( WB \) is the **wheelbase** (distance between front and rear axles),
-- \( TW \) is the **track width** (distance between the left and right wheels),
+- $WB$ is the **wheelbase** (distance between front and rear axles),
+- $TW$ is the **track width** (distance between the left and right wheels),
 
 when 
 - Right turn
